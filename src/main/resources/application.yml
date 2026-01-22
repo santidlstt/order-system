@@ -1,0 +1,86 @@
+spring:
+  application:
+    name: order-system
+
+  # ===================================
+  # DATASOURCE - PostgreSQL
+  # ===================================
+  datasource:
+    url: jdbc:postgresql://localhost:5433/orderdb  # Puerto 5433
+    username: orderuser
+    password: orderpass
+    driver-class-name: org.postgresql.Driver
+
+  # ===================================
+  # JPA / HIBERNATE
+  # ===================================
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Flyway maneja el schema, Hibernate solo valida
+    show-sql: true        # Mostrar queries SQL en consola (dev)
+    properties:
+      hibernate:
+        format_sql: true  # SQL formateado y legible
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # ===================================
+  # FLYWAY - Migraciones
+  # ===================================
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # ===================================
+  # SECURITY
+  # ===================================
+  security:
+    user:
+      name: admin       # Usuario por defecto (NO se usa, solo para evitar warnings)
+      password: admin
+
+# ===================================
+# SERVER
+# ===================================
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param  # Solo mostrar stacktrace si se pide ?trace=true
+
+# ===================================
+# JWT CONFIGURATION
+# ===================================
+jwt:
+  # IMPORTANTE: En producción usar variable de entorno
+  # Ejemplo: ${JWT_SECRET:valor-por-defecto}
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration: ${JWT_EXPIRATION:1800000}  # 30 minutos en milisegundos
+
+# ===================================
+# SPRINGDOC / SWAGGER
+# ===================================
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operationsSorter: method
+    disable-swagger-default-url: true
+
+# ===================================
+# LOGGING
+# ===================================
+logging:
+  level:
+    root: INFO
+    com.ordersystem: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springdoc: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
