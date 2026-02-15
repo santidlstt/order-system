@@ -13,6 +13,9 @@ import com.ordersystem.domain.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ordersystem.domain.exception.ProductNotFoundException;
+import com.ordersystem.domain.exception.InactiveProductException;
+import com.ordersystem.domain.exception.InsufficientStockException;
 
 /**
  * Servicio para crear pedidos
@@ -37,17 +40,21 @@ public class CreateOrderService {
         for (OrderItemRequest itemRequest : request.getItems()) {
             // Buscar el producto
             Product product = productRepository.findById(itemRequest.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + itemRequest.getProductId()));
+                    .orElseThrow(() -> new ProductNotFoundException(itemRequest.getProductId()));
 
             // Validar que esté activo
             if (!product.getActive()) {
-                throw new RuntimeException("El producto no está disponible: " + product.getName());
+                throw new InactiveProductException(product.getId(), product.getName());
             }
 
             // Validar stock disponible (sin descontar todavía)
             if (!product.hasStock(itemRequest.getQuantity())) {
-                throw new RuntimeException("Stock insuficiente para el producto: " + product.getName());
-            }
+                throw new InsufficientStockException(
+                        product.getId(),
+                        product.getName(),
+                        itemRequest.getQuantity(),
+                        product.getStock()
+                );            }
 
             // Crear el item del pedido
             OrderItem orderItem = new OrderItem(

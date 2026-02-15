@@ -21,6 +21,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
+import com.ordersystem.domain.exception.OrderNotFoundException;
+import com.ordersystem.api.exception.ForbiddenException;
 
 import java.util.List;
 
@@ -84,14 +86,14 @@ public class OrderController {
             Authentication authentication) {
 
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + id));
+                .orElseThrow(() -> new OrderNotFoundException(id));
 
         // Verificar que el usuario solo pueda ver sus propios pedidos (a menos que sea ADMIN)
         boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
         Long userId = getUserIdFromAuthentication(authentication);
 
         if (!isAdmin && !order.getUserId().equals(userId)) {
-            throw new RuntimeException("No tienes permisos para ver este pedido");
+            throw new ForbiddenException("No tienes permisos para ver este pedido");
         }
 
         OrderResponse response = orderQueryService.getOrderById(id);
