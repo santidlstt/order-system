@@ -1,0 +1,147 @@
+name: CI - Build and Test
+
+# Triggers: Se ejecuta en push y pull requests a la rama main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Configuración de permisos para GitHub Actions
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  build-and-test:
+    name: Build and Test (Java 17)
+    runs-on: ubuntu-latest
+
+    steps:
+      # ============================================
+      # 1. CHECKOUT DEL CÓDIGO
+      # ============================================
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch completo para SonarCloud (futuro)
+
+      # ============================================
+      # 2. SETUP DE JAVA 17
+      # ============================================
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'  # Eclipse Temurin (anteriormente AdoptOpenJDK)
+
+      # ============================================
+      # 3. CACHE DE DEPENDENCIAS MAVEN
+      # ============================================
+      # Esto acelera los builds subsecuentes guardando las dependencias descargadas
+      - name: 📦 Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # ============================================
+      # 4. BUILD Y TESTS
+      # ============================================
+      # mvn verify ejecuta:
+      #   1. compile: Compila el código
+      #   2. test: Ejecuta tests unitarios (Surefire)
+      #   3. integration-test: Ejecuta tests de integración (Failsafe)
+      #   4. verify: Valida que todo esté OK + genera reporte JaCoCo
+      - name: 🔨 Build with Maven
+        run: ./mvnw clean verify -B
+        env:
+          # Profile de test para usar H2 en memoria
+          SPRING_PROFILES_ACTIVE: test
+
+      # ============================================
+      # 5. PUBLICAR RESULTADOS DE TESTS
+      # ============================================
+      # Este step siempre se ejecuta, incluso si los tests fallan
+      - name: 📊 Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()  # Ejecutar incluso si el build falló
+        with:
+          files: |
+            target/surefire-reports/*.xml
+            target/failsafe-reports/*.xml
+          comment_title: 🧪 Test Results
+          check_name: Test Results
+
+      # ============================================
+      # 6. GENERAR REPORTE DE COBERTURA
+      # ============================================
+      # JaCoCo genera reportes HTML en target/site/jacoco/
+      - name: 📈 Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        if: success()  # Solo si todos los tests pasaron
+        with:
+          generate-branches-badge: true
+          jacoco-csv-file: target/site/jacoco/jacoco.csv
+          badges-directory: .github/badges
+
+      # ============================================
+      # 7. COMENTAR COBERTURA EN PR
+      # ============================================
+      # Agrega un comentario con la cobertura en Pull Requests
+      - name: 💬 Add coverage to PR
+        id: jacoco-reporter
+        uses: PavanMudigonda/jacoco-reporter@v5.0
+        if: github.event_name == 'pull_request'
+        with:
+          coverage_results_path: target/site/jacoco/jacoco.xml
+          coverage_report_name: Coverage Report
+          coverage_report_title: JaCoCo Coverage Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_check_run: false
+          minimum_coverage: 60
+          fail_below_threshold: false
+          publish_only_summary: false
+
+      # ============================================
+      # 8. SUBIR REPORTES COMO ARTIFACTS
+      # ============================================
+      # Los artifacts se pueden descargar desde la página de GitHub Actions
+      - name: 📎 Upload JaCoCo coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          retention-days: 30
+
+      - name: 📎 Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/failsafe-reports/
+          retention-days: 30
+
+      # ============================================
+      # 9. SUMMARY DEL BUILD
+      # ============================================
+      - name: 📋 Build Summary
+        if: always()
+        run: |
+          echo "## 🎯 Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Build completed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Java Version:** 17" >> $GITHUB_STEP_SUMMARY
+          echo "- **Maven Wrapper:** ./mvnw" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tests:** Unit + Integration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Database:** H2 (in-memory)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 Coverage reports available in artifacts" >> $GITHUB_STEP_SUMMARY
