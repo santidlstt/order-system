@@ -2,10 +2,16 @@
 
 Sistema backend profesional para gestión de pedidos con autenticación JWT, construido con **Spring Boot 3** y **arquitectura limpia**.
 
+[![CI Status](https://github.com/santidlstt/order-system/actions/workflows/ci.yml/badge.svg)](https://github.com/santidlstt/order-system/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-62%20passing-brightgreen)](https://github.com/santidlstt/order-system)
-[![Coverage](https://img.shields.io/badge/coverage-integration%20%2B%20unit-blue)](https://github.com/santidlstt/order-system)
-[![Java](https://img.shields.io/badge/Java-17-orange)](https://openjdk.org/projects/jdk/17/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.1-green)](https://spring.io/projects/spring-boot)
+[![Coverage](https://img.shields.io/badge/coverage-60%25+-blue)](https://github.com/santidlstt/order-system)
+[![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4.1-green?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![JWT](https://img.shields.io/badge/JWT-Auth-red?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker&logoColor=white)](https://www.docker.com/)
+
+---
 
 ## 🚀 Características
 
@@ -17,6 +23,7 @@ Sistema backend profesional para gestión de pedidos con autenticación JWT, con
 - ✅ **Manejo de errores** profesional con excepciones custom
 - ✅ **Clean Architecture** (Hexagonal)
 - ✅ **Testing robusto** (62 tests: 19 unitarios + 43 integración)
+- ✅ **CI/CD** con GitHub Actions
 - ✅ **Documentación Swagger/OpenAPI**
 - ✅ **Migraciones con Flyway**
 - ✅ **Docker Compose** para desarrollo local
@@ -48,6 +55,8 @@ order-system/
 | **ORM** | JPA / Hibernate |
 | **Migraciones** | Flyway |
 | **Testing** | JUnit 5, Mockito, MockMvc, Spring Test |
+| **Code Coverage** | JaCoCo (60%+) |
+| **CI/CD** | GitHub Actions |
 | **Documentación** | SpringDoc OpenAPI 3 |
 | **Build** | Maven |
 | **Contenedores** | Docker, Docker Compose |
@@ -97,33 +106,50 @@ http://localhost:8080/swagger-ui.html
 
 ### Ejecutar todos los tests (62 tests)
 ```bash
-./mvnw test
+./mvnw verify
 ```
+
+Este comando ejecuta:
+- Tests unitarios (Maven Surefire)
+- Tests de integración (Maven Failsafe)
+- Genera reporte de cobertura con JaCoCo
 
 ### Ejecutar solo tests unitarios (19 tests)
 ```bash
-./mvnw test -Dtest=*ServiceTest
+./mvnw test
 ```
 
 ### Ejecutar solo tests de integración (43 tests)
 ```bash
-./mvnw test -Dtest=*IntegrationTest
+./mvnw integration-test
+```
+
+### Ver reporte de cobertura
+```bash
+# Después de ejecutar ./mvnw verify
+# Linux/Mac
+open target/site/jacoco/index.html
+
+# Windows
+start target/site/jacoco/index.html
 ```
 
 ### Cobertura de Tests
 
 - ✅ **Tests Unitarios** (19 tests):
-  - CreateOrderServiceTest (5 tests)
-  - PayOrderServiceTest (7 tests)
-  - CancelOrderServiceTest (7 tests)
+    - CreateOrderServiceTest (5 tests)
+    - PayOrderServiceTest (7 tests)
+    - CancelOrderServiceTest (7 tests)
 
 - ✅ **Tests de Integración** (43 tests):
-  - AuthControllerIntegrationTest (7 tests)
-  - OrderControllerIntegrationTest (36 tests)
-    - Crear pedidos con validaciones
-    - Gestión de permisos (USER/ADMIN)
-    - Flujos completos (crear → pagar → cancelar)
-    - Validación de stock y estados
+    - AuthControllerIntegrationTest (7 tests)
+    - OrderControllerIntegrationTest (36 tests)
+        - Crear pedidos con validaciones
+        - Gestión de permisos (USER/ADMIN)
+        - Flujos completos (crear → pagar → cancelar)
+        - Validación de stock y estados
+
+- ✅ **Cobertura de Código**: 60%+ (líneas), 50%+ (branches)
 
 ## 🔐 Usuarios de Prueba
 
@@ -340,6 +366,20 @@ docker logs orderdb
 docker logs pgadmin
 ```
 
+## 🔄 CI/CD
+
+Este proyecto implementa **integración y entrega continua** con GitHub Actions:
+
+- ✅ **Build automático** en cada push y pull request
+- ✅ **62 tests** ejecutados automáticamente (unitarios + integración)
+- ✅ **Análisis de cobertura** con JaCoCo (60%+ requerido)
+- ✅ **Reportes descargables** como artifacts
+- ✅ **Cache de dependencias** Maven (builds ~2 minutos)
+
+**Ver workflow:** [.github/workflows/ci.yml](.github/workflows/ci.yml)
+
+**Estado del build:** El badge arriba se actualiza automáticamente ✅
+
 ## 📈 Roadmap
 
 ### ✅ Completado
@@ -349,11 +389,12 @@ docker logs pgadmin
 - [x] Tests unitarios e integración (62 tests)
 - [x] Manejo de excepciones profesional
 - [x] Documentación Swagger
+- [x] CI/CD con GitHub Actions
+- [x] Code coverage con JaCoCo
 
 ### 🚧 En Progreso
-- [ ] CI/CD con GitHub Actions
 - [ ] Deploy a cloud (Render/Railway)
-- [ ] Badges de build y coverage
+- [ ] Aumentar cobertura a 80%+
 
 ### 🔮 Futuro
 - [ ] Paginación en listados
