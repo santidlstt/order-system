@@ -1,0 +1,35 @@
+# Configuración de Render para Order System
+# Este archivo define la infraestructura para el deployment de la aplicación
+
+services:
+  # Servicio Web (Aplicación Spring Boot)
+  - type: web
+    name: order-system
+    env: java
+    plan: free  # Plan gratuito con 750 horas/mes
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -Dserver.port=$PORT -Dspring.profiles.active=prod -jar target/*.jar
+    healthCheckPath: /api/health
+    envVars:
+      # Perfil de Spring
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+
+      # Configuración de Base de Datos (se configuran manualmente en Render)
+      # Estos son placeholders - configurarás los valores reales desde Neon
+      - key: DATABASE_URL
+        sync: false  # Configurar manualmente en el dashboard de Render
+
+      - key: DATABASE_USERNAME
+        sync: false  # Configurar manualmente en el dashboard de Render
+
+      - key: DATABASE_PASSWORD
+        sync: false  # Configurar manualmente en el dashboard de Render
+
+      # Configuración JWT (se configura manualmente)
+      - key: JWT_SECRET
+        sync: false  # Configurar manualmente - usar generate-jwt-secret.sh
+
+      # Opciones de Java
+      - key: JAVA_TOOL_OPTIONS
+        value: "-Xmx512m -Xms256m"  # Limitar memoria para free tier

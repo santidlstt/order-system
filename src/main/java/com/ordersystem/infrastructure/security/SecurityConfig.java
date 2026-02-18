@@ -42,6 +42,9 @@ public class SecurityConfig {
                         // Endpoints públicos de autenticación
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        //  Health check para Render (deployment)
+                        .requestMatchers("/api/health/**").permitAll()
+
                         // Endpoints públicos de Swagger
                         .requestMatchers(
                                 "/swagger-ui/**",
