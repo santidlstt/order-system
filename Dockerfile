@@ -30,12 +30,12 @@ WORKDIR /app
 # Copiar el JAR compilado desde la etapa de build
 COPY --from=build /app/target/*.jar app.jar
 
-# Exponer el puerto (Render usa PORT dinámico)
+# Exponer el puerto
 EXPOSE 8080
 
-# Variables de entorno por defecto (se sobreescriben con las de Render)
+# Configurar variables de entorno directamente en el contenedor
 ENV SPRING_PROFILES_ACTIVE=prod
 
 # Comando para ejecutar la aplicación
-# Render pasará $PORT como variable de entorno
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -Dspring.profiles.active=prod -Xmx512m -Xms256m -jar app.jar"]
+# Forzamos el perfil prod de múltiples maneras para asegurar que funcione
+CMD ["sh", "-c", "java -Dspring.profiles.active=prod -Dserver.port=${PORT:-8080} -Xmx512m -Xms256m -jar app.jar"]
