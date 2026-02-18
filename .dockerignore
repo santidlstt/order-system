@@ -1,0 +1,26 @@
+# Archivos a ignorar en Docker build
+# Esto hace el build más rápido
+
+# Directorios de build
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# Documentación
+*.md
+!README.md
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.bak
