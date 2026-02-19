@@ -3,6 +3,7 @@
 Sistema backend profesional para gestión de pedidos con autenticación JWT, construido con **Spring Boot 3** y **arquitectura limpia**.
 
 [![CI Status](https://github.com/santidlstt/order-system/actions/workflows/ci.yml/badge.svg)](https://github.com/santidlstt/order-system/actions/workflows/ci.yml)
+[![Deploy Status](https://img.shields.io/badge/deploy-passing-brightgreen)](https://order-system-wdqj.onrender.com)
 [![Tests](https://img.shields.io/badge/tests-62%20passing-brightgreen)](https://github.com/santidlstt/order-system)
 [![Coverage](https://img.shields.io/badge/coverage-60%25+-blue)](https://github.com/santidlstt/order-system)
 [![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
@@ -10,6 +11,146 @@ Sistema backend profesional para gestión de pedidos con autenticación JWT, con
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![JWT](https://img.shields.io/badge/JWT-Auth-red?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker&logoColor=white)](https://www.docker.com/)
+
+---
+
+## 🌐 Producción
+
+### 🚀 Aplicación Desplegada
+
+**URL Base**: https://order-system-wdqj.onrender.com  
+**Swagger UI**: https://order-system-wdqj.onrender.com/swagger-ui.html  
+**Health Check**: https://order-system-wdqj.onrender.com/api/health
+
+### 📊 Stack de Producción
+
+| Componente | Tecnología | Plan |
+|------------|-----------|------|
+| **Backend** | Render | Free Tier |
+| **Base de Datos** | Neon PostgreSQL | Free Tier (3 GB) |
+| **SSL/HTTPS** | Automático | ✅ Incluido |
+| **Deploy** | GitHub Actions → Render | ✅ Automático |
+| **Costo** | $0/mes | 100% Gratuito |
+
+### ⚡ Características del Deploy
+
+- ✅ **Deploy automático**: Push a `main` → Deploy automático
+- ✅ **SSL/HTTPS**: Certificado automático y gratuito
+- ✅ **Health checks**: Monitoreo automático cada 30s
+- ✅ **PostgreSQL en la nube**: Base de datos gestionada en Neon
+- ✅ **Migraciones automáticas**: Flyway se ejecuta en cada deploy
+- ✅ **Variables de entorno seguras**: Secrets gestionados en Render
+
+### 🧪 Probar la API en Producción
+
+#### 1. Health Check
+```bash
+curl https://order-system-wdqj.onrender.com/api/health
+```
+
+**Respuesta esperada:**
+```json
+{
+  "status": "UP",
+  "timestamp": "2024-02-18T10:30:00",
+  "service": "order-system",
+  "version": "1.0.0"
+}
+```
+
+#### 2. Login (Usuario de Prueba)
+```bash
+curl -X POST https://order-system-wdqj.onrender.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@test.com",
+    "password": "1234"
+  }'
+```
+
+**Respuesta esperada:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "type": "Bearer",
+  "email": "user@test.com",
+  "roles": ["ROLE_USER"]
+}
+```
+
+#### 3. Listar Productos (con token)
+```bash
+curl -X GET https://order-system-wdqj.onrender.com/api/products \
+  -H "Authorization: Bearer TU_TOKEN_AQUI"
+```
+
+#### 4. Crear Pedido (con token)
+```bash
+curl -X POST https://order-system-wdqj.onrender.com/api/orders \
+  -H "Authorization: Bearer TU_TOKEN_AQUI" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {"productId": 1, "quantity": 2}
+    ],
+    "street": "Calle Falsa 123",
+    "city": "Montevideo",
+    "country": "Uruguay"
+  }'
+```
+
+### ⚠️ Limitaciones del Free Tier
+
+- **Cold Starts**: La aplicación se suspende después de 15 minutos sin tráfico. La primera request puede tardar ~30 segundos.
+- **Base de Datos**: Neon free tier incluye 3 GB de almacenamiento y se suspende después de 5 minutos de inactividad (~1-2s de cold start).
+
+> **Nota**: Estas limitaciones son esperadas para planes gratuitos y no afectan la funcionalidad de la demostración.
+
+### 🔧 Arquitectura de Deployment
+
+```
+┌─────────────┐
+│   GitHub    │ ← Código fuente (main branch)
+│ order-system│
+└──────┬──────┘
+       │ Push → GitHub Webhook
+       ↓
+┌─────────────┐
+│   Render    │ ← Build automático
+│  Docker VM  │    - Maven compile
+└──────┬──────┘    - Run tests (opcional)
+       │            - Package JAR
+       ↓
+┌─────────────┐
+│   Render    │ ← Servidor de Producción
+│ Web Service │    - Java 17 + Spring Boot
+└──────┬──────┘    - Puerto 10000
+       │            - Health checks
+       ↓
+┌─────────────┐
+│    Neon     │ ← Base de Datos PostgreSQL
+│  PostgreSQL │    - 3 GB storage
+└─────────────┘    - Migraciones automáticas (Flyway)
+```
+
+### 📝 Variables de Entorno (Producción)
+
+Las siguientes variables están configuradas en Render:
+
+```bash
+SPRING_PROFILES_ACTIVE=prod
+DATABASE_URL=jdbc:postgresql://[neon-host]:5432/neondb?sslmode=require
+DATABASE_USERNAME=***
+DATABASE_PASSWORD=***
+JWT_SECRET=***
+JAVA_TOOL_OPTIONS=-Xmx512m -Xms256m
+```
+
+### 📖 Guía de Deployment
+
+Para instrucciones detalladas sobre cómo se realizó el deployment, consulta:
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Guía completa paso a paso
+- [CHECKLIST.md](./CHECKLIST.md) - Checklist de deployment
 
 ---
 
@@ -24,6 +165,7 @@ Sistema backend profesional para gestión de pedidos con autenticación JWT, con
 - ✅ **Clean Architecture** (Hexagonal)
 - ✅ **Testing robusto** (62 tests: 19 unitarios + 43 integración)
 - ✅ **CI/CD** con GitHub Actions
+- ✅ **Deploy automático** a Render
 - ✅ **Documentación Swagger/OpenAPI**
 - ✅ **Migraciones con Flyway**
 - ✅ **Docker Compose** para desarrollo local
@@ -56,7 +198,8 @@ order-system/
 | **Migraciones** | Flyway |
 | **Testing** | JUnit 5, Mockito, MockMvc, Spring Test |
 | **Code Coverage** | JaCoCo (60%+) |
-| **CI/CD** | GitHub Actions |
+| **CI/CD** | GitHub Actions + Render |
+| **Cloud** | Render (backend), Neon (PostgreSQL) |
 | **Documentación** | SpringDoc OpenAPI 3 |
 | **Build** | Maven |
 | **Contenedores** | Docker, Docker Compose |
@@ -68,7 +211,7 @@ order-system/
 - **Docker** y **Docker Compose**
 - **Git**
 
-## 🚀 Instalación y Ejecución
+## 🚀 Instalación y Ejecución (Desarrollo Local)
 
 ### 1. Clonar el repositorio
 ```bash
@@ -97,7 +240,7 @@ Esto iniciará:
 
 O desde tu IDE favorito ejecutando `OrderSystemApplication.java`
 
-### 5. Acceder a Swagger
+### 5. Acceder a Swagger (Local)
 ```
 http://localhost:8080/swagger-ui.html
 ```
@@ -153,10 +296,10 @@ start target/site/jacoco/index.html
 
 ## 🔐 Usuarios de Prueba
 
-| Email | Password | Rol |
-|-------|----------|-----|
-| `user@test.com` | `1234` | USER |
-| `admin@test.com` | `1234` | ADMIN |
+| Email | Password | Rol | Disponible en |
+|-------|----------|-----|---------------|
+| `user@test.com` | `1234` | USER | Local + Producción |
+| `admin@test.com` | `1234` | ADMIN | Local + Producción |
 
 ## 📚 API Reference
 
@@ -175,7 +318,9 @@ POST /api/auth/login
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expiresIn": 1800000
+  "type": "Bearer",
+  "email": "user@test.com",
+  "roles": ["ROLE_USER"]
 }
 ```
 
@@ -199,7 +344,7 @@ POST /api/orders/{id}/cancel    # Cancelar (devuelve stock)
 PUT  /api/orders/{id}/ship      # Marcar enviado (ADMIN)
 ```
 
-## 🎯 Flujo de Prueba Completo
+## 🎯 Flujo de Prueba Completo (Local)
 
 ### 1. Login como usuario
 ```bash
@@ -270,7 +415,7 @@ El sistema retorna códigos HTTP semánticos y mensajes claros:
 
 ## 🗄️ Base de Datos
 
-### Acceder a pgAdmin
+### Desarrollo Local - Acceder a pgAdmin
 
 1. Abrir: `http://localhost:5050`
 2. Login: `admin@ordersystem.com` / `admin`
@@ -282,7 +427,7 @@ El sistema retorna códigos HTTP semánticos y mensajes claros:
 
 ### Migraciones Flyway
 
-Las migraciones se ejecutan automáticamente al iniciar:
+Las migraciones se ejecutan automáticamente al iniciar (local y producción):
 
 - **V1**: Users y Roles
 - **V2**: Products
@@ -291,11 +436,11 @@ Las migraciones se ejecutan automáticamente al iniciar:
 
 ## 🔧 Configuración
 
-### Variables de Entorno (Producción)
+### Variables de Entorno (Desarrollo Local)
 ```bash
 JWT_SECRET=tu-secret-super-seguro-aqui
 JWT_EXPIRATION=1800000
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/orderdb
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/orderdb
 SPRING_DATASOURCE_USERNAME=orderuser
 SPRING_DATASOURCE_PASSWORD=orderpass
 ```
@@ -305,10 +450,10 @@ SPRING_DATASOURCE_PASSWORD=orderpass
 # Desarrollo (H2 para tests)
 ./mvnw test
 
-# Desarrollo (PostgreSQL)
+# Desarrollo (PostgreSQL local)
 ./mvnw spring-boot:run
 
-# Producción (requiere application-prod.yml)
+# Producción (usa application-prod.yml)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
@@ -319,6 +464,7 @@ src/
 │   ├── java/com/ordersystem/
 │   │   ├── api/
 │   │   │   ├── auth/                 # AuthController
+│   │   │   ├── health/               # HealthController (producción)
 │   │   │   ├── order/                # OrderController + DTOs
 │   │   │   ├── product/              # ProductController + DTOs
 │   │   │   └── exception/            # GlobalExceptionHandler
@@ -333,8 +479,11 @@ src/
 │   │       ├── security/             # JWT, SecurityConfig
 │   │       └── mapper/               # Entity ↔ Domain mappers
 │   └── resources/
-│       ├── application.yml
+│       ├── application.yml           # Configuración desarrollo
+│       ├── application-prod.yml      # Configuración producción
 │       └── db/migration/             # Scripts Flyway
+├── Dockerfile                        # Imagen Docker para producción
+├── start.sh                          # Script de inicio (producción)
 └── test/
     ├── java/com/ordersystem/
     │   ├── api/                      # Tests de integración (43)
@@ -349,7 +498,7 @@ src/
 
 ## 🐳 Docker
 
-### Detener contenedores
+### Detener contenedores (local)
 ```bash
 docker compose down
 ```
@@ -368,17 +517,27 @@ docker logs pgadmin
 
 ## 🔄 CI/CD
 
-Este proyecto implementa **integración y entrega continua** con GitHub Actions:
+Este proyecto implementa **integración y entrega continua** completa:
 
+### GitHub Actions (CI)
 - ✅ **Build automático** en cada push y pull request
 - ✅ **62 tests** ejecutados automáticamente (unitarios + integración)
 - ✅ **Análisis de cobertura** con JaCoCo (60%+ requerido)
 - ✅ **Reportes descargables** como artifacts
 - ✅ **Cache de dependencias** Maven (builds ~2 minutos)
 
-**Ver workflow:** [.github/workflows/ci.yml](.github/workflows/ci.yml)
+### Render (CD)
+- ✅ **Deploy automático** en cada push a `main`
+- ✅ **Docker build** automático
+- ✅ **Health checks** después del deploy
+- ✅ **Rollback automático** si falla el health check
+- ✅ **Zero downtime** durante deploys
 
-**Estado del build:** El badge arriba se actualiza automáticamente ✅
+**Ver workflow CI:** [.github/workflows/ci.yml](.github/workflows/ci.yml)
+
+**Estado del CI/CD:**
+- [![CI Status](https://github.com/santidlstt/order-system/actions/workflows/ci.yml/badge.svg)](https://github.com/santidlstt/order-system/actions/workflows/ci.yml)
+- [![Deploy Status](https://img.shields.io/badge/deploy-passing-brightgreen)](https://order-system-wdqj.onrender.com)
 
 ## 📈 Roadmap
 
@@ -391,9 +550,11 @@ Este proyecto implementa **integración y entrega continua** con GitHub Actions:
 - [x] Documentación Swagger
 - [x] CI/CD con GitHub Actions
 - [x] Code coverage con JaCoCo
+- [x] **Deploy a producción (Render + Neon)**
+- [x] **Deploy automático desde GitHub**
+- [x] **SSL/HTTPS en producción**
 
 ### 🚧 En Progreso
-- [ ] Deploy a cloud (Render/Railway)
 - [ ] Aumentar cobertura a 80%+
 
 ### 🔮 Futuro
@@ -404,6 +565,7 @@ Este proyecto implementa **integración y entrega continua** con GitHub Actions:
 - [ ] Rate limiting
 - [ ] Reportes y estadísticas
 - [ ] WebSockets para notificaciones en tiempo real
+- [ ] Monitoreo con Prometheus/Grafana
 
 ## 👨‍💻 Autor
 
@@ -420,3 +582,5 @@ Este proyecto es de código abierto y está disponible bajo la licencia MIT.
 ⭐ **Si este proyecto te fue útil, considera darle una estrella en GitHub**
 
 💬 **¿Preguntas o sugerencias?** Abre un [issue](https://github.com/santidlstt/order-system/issues)
+
+🌐 **Prueba la API en vivo**: https://order-system-gsys.onrender.com/swagger-ui.html
